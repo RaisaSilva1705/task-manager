@@ -5,7 +5,7 @@
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="m-0"><i class="bi bi-folder2-open text-primary-custom me-2"></i> Meus Projetos</h2>
-        <a href="#" class="btn btn-primary-custom">
+        <a href="{{ route('projects.create') }}" class="btn btn-primary-custom">
             <i class="bi bi-plus-lg"></i> Novo Projeto
         </a>
     </div>
