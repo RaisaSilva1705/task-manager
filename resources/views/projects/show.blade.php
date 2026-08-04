@@ -25,7 +25,16 @@
                     @foreach ($project->tasks->where('status', 'todo') as $task)
                         <div class="card shadow-sm mb-2 border-0 task-card cursor-grab" data-id="{{ $task->id }}">
                             <div class="card-body p-3">
-                                <h6 class="card-title fw-bold mb-1">{{ $task->title }}</h6>
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <h6 class="card-title fw-bold mb-1">{{ $task->title }}</h6>
+                                    <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir esta tarefa?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-link text-danger p-0 ms-2" title="Excluir Tarefa">
+                                            <i class="bi bi-trash3 me-1"></i>
+                                        </button>
+                                    </form>
+                                </div>
                                 @if ($task->description)
                                     <p class="card-text small text-muted mb-0">{{ Str::limit($task->description, 60) }}</p>
                                 @endif

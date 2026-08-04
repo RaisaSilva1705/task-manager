@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Project;
+use App\Models\Task;
 
 class TaskController extends Controller
 {
@@ -19,7 +20,7 @@ class TaskController extends Controller
         return redirect()->route('projects.show', $project->id);
     }
 
-    public function updateStatus(Request $request, \App\Models\Task $task)
+    public function updateStatus(Request $request, Task $task)
     {
         $validated = $request->validate([
             'status' => 'required|in:todo,in_progress,done'
@@ -28,5 +29,13 @@ class TaskController extends Controller
         $task->update(['status' => $validated['status']]);
 
         return response()->json(['success' => true, 'message' => 'Status atualizado!']);
+    }
+
+    public function destroy(Task $task)
+    {
+        $projectId = $task->project_id;
+        $task->delete();
+
+        return redirect()->route('projects.show', $projectId);
     }
 }
