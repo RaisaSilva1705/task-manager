@@ -12,3 +12,4 @@ Route::get('/projetos/{project}', [ProjectController::class, 'show'])->name('pro
 Route::post('/projetos/{project}/tarefas', [TaskController::class, 'store'])->name('tasks.store');
 Route::patch('/tarefas/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.updateStatus');
 Route::delete('/tarefas/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
+Route::put('/tarefas/{task}', [TaskController::class, 'update'])->name('tasks.update');

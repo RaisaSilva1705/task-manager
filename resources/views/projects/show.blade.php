@@ -27,13 +27,23 @@
                             <div class="card-body p-3">
                                 <div class="d-flex justify-content-between align-items-start mb-1">
                                     <h6 class="card-title fw-bold mb-1">{{ $task->title }}</h6>
-                                    <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir esta tarefa?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-link text-danger p-0 ms-2" title="Excluir Tarefa">
-                                            <i class="bi bi-trash3 me-1"></i>
+                                    <div class="d-flex">
+                                        <button type="button" class="btn btn-link text-secondary p-0 ms-2" title="Editar Tarefa" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editTaskModal" 
+                                            data-id="{{ $task->id }}"
+                                            data-title="{{ $task->title }}"
+                                            data-description="{{ $task->description }}">
+                                            <i class="bi bi-pencil me-1"></i>
                                         </button>
-                                    </form>
+                                        <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir esta tarefa?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-link text-danger p-0 ms-2" title="Excluir Tarefa">
+                                                <i class="bi bi-trash3 me-1"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </div>
                                 @if ($task->description)
                                     <p class="card-text small text-muted mb-0">{{ Str::limit($task->description, 60) }}</p>
@@ -59,7 +69,26 @@
                     @foreach ($project->tasks->where('status', 'in_progress') as $task)
                         <div class="card shadow-sm mb-2 border-0 task-card cursor-grab" data-id="{{ $task->id }}">
                             <div class="card-body p-3">
-                                <h6 class="card-title fw-bold mb-1">{{ $task->title }}</h6>
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <h6 class="card-title fw-bold mb-1">{{ $task->title }}</h6>
+                                    <div class="d-flex">
+                                        <button type="button" class="btn btn-link text-secondary p-0 ms-2" title="Editar Tarefa" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editTaskModal" 
+                                            data-id="{{ $task->id }}"
+                                            data-title="{{ $task->title }}"
+                                            data-description="{{ $task->description }}">
+                                            <i class="bi bi-pencil me-1"></i>
+                                        </button>
+                                        <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir esta tarefa?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-link text-danger p-0 ms-2" title="Excluir Tarefa">
+                                                <i class="bi bi-trash3 me-1"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
                                 @if ($task->description)
                                     <p class="card-text small text-muted mb-0">{{ Str::limit($task->description, 60) }}</p>
                                 @endif
@@ -79,7 +108,26 @@
                     @foreach ($project->tasks->where('status', 'done') as $task)
                         <div class="card shadow-sm mb-2 border-0 task-card cursor-grab" data-id="{{ $task->id }}">
                             <div class="card-body p-3">
-                                <h6 class="card-title fw-bold mb-1">{{ $task->title }}</h6>
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <h6 class="card-title fw-bold mb-1">{{ $task->title }}</h6>
+                                    <div class="d-flex">
+                                        <button type="button" class="btn btn-link text-secondary p-0 ms-2" title="Editar Tarefa" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editTaskModal" 
+                                            data-id="{{ $task->id }}"
+                                            data-title="{{ $task->title }}"
+                                            data-description="{{ $task->description }}">
+                                            <i class="bi bi-pencil me-1"></i>
+                                        </button>
+                                        <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir esta tarefa?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-link text-danger p-0 ms-2" title="Excluir Tarefa">
+                                                <i class="bi bi-trash3 me-1"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
                                 @if ($task->description)
                                     <p class="card-text small text-muted mb-0">{{ Str::limit($task->description, 60) }}</p>
                                 @endif
@@ -114,6 +162,36 @@
                     <div class="modal-footer border-top-0 bg-light">
                         <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-primary-custom">Salvar Tarefa</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal para editar tarefa --}}
+    <div class="modal fade" id="editTaskModal" tabindex="-1" aria-labelledby="editTaskModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold" id="editTaskModalLabel">Editar Tarefa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="editTaskForm" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-body pt-0">
+                        <div class="mb-3">
+                            <label for="edit_title" class="form-label fw-bold">O que precisa ser feito?</label>
+                            <input type="text" class="form-control" id="edit_title" name="title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_description" class="form-label fw-bold">Detalhes <span class="text-muted">(opcional)</span></label>
+                            <textarea class="form-control" id="edit_description" name="description"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top-0 bg-light">
+                        <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary-custom">Salvar Alterações</button>
                     </div>
                 </form>
             </div>
@@ -176,5 +254,21 @@
                 });
             });
         });
+
+        const editTaskModal = document.getElementById('editTaskModal');
+        if (editTaskModal) {
+            editTaskModal.addEventListener('show.bs.modal', event => {
+                const button = event.relatedTarget;
+                const taskId = button.getAttribute('data-id');
+                const title = button.getAttribute('data-title');
+                const description = button.getAttribute('data-description');
+
+                document.getElementById('edit_title').value = title;
+                document.getElementById('edit_description').value = description || '';
+
+                const form = document.getElementById('editTaskForm');
+                form.action = `/tarefas/${taskId}`;
+            });
+        }
     </script>
 @endsection

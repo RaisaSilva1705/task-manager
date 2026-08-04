@@ -38,4 +38,16 @@ class TaskController extends Controller
 
         return redirect()->route('projects.show', $projectId);
     }
+
+    public function update(Request $request, Task $task)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string'
+        ]);
+
+        $task->update($validated);
+
+        return redirect()->route('projects.show', $task->project_id);
+    }
 }
