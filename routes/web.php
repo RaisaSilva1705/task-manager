@@ -10,3 +10,4 @@ Route::get('/projetos/novo', [ProjectController::class, 'create'])->name('projec
 Route::post('/projetos', [ProjectController::class, 'store'])->name('projects.store');
 Route::get('/projetos/{project}', [ProjectController::class, 'show'])->name('projects.show');
 Route::post('/projetos/{project}/tarefas', [TaskController::class, 'store'])->name('tasks.store');
+Route::patch('/tarefas/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.updateStatus');

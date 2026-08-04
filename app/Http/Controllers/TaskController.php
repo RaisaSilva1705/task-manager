@@ -18,4 +18,15 @@ class TaskController extends Controller
 
         return redirect()->route('projects.show', $project->id);
     }
+
+    public function updateStatus(Request $request, \App\Models\Task $task)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:todo,in_progress,done'
+        ]);
+
+        $task->update(['status' => $validated['status']]);
+
+        return response()->json(['success' => true, 'message' => 'Status atualizado!']);
+    }
 }
