@@ -29,4 +29,9 @@ class ProjectController extends Controller
 
         return redirect()->route('projects.index')->with('success', 'Projeto criado com sucesso!');
     }
+
+    public function show(Project $project)
+    {
+        return view('projects.show', compact('project'));
+    }
 }

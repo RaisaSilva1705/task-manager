@@ -19,7 +19,7 @@
                         <p class="card-text text-muted">{{ $project->description }}</p>
                     </div>
                     <div class="card-footer bg-transparent border-top-0 text-end">
-                        <a href="#" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-right"></i> Acessar Board</a>
+                        <a href="{{ route('projects.show', $project->id) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-right"></i> Acessar Board</a>
                     </div>
                 </div>
             </div>

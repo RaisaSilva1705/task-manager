@@ -8,3 +8,4 @@ Route::get('/', [ProjectController::class, 'index'])->name('projects.index');
 
 Route::get('/projetos/novo', [ProjectController::class, 'create'])->name('projects.create');
 Route::post('/projetos', [ProjectController::class, 'store'])->name('projects.store');
+Route::get('/projetos/{project}', [ProjectController::class, 'show'])->name('projects.show');
