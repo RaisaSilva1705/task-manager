@@ -34,4 +34,31 @@ class ProjectController extends Controller
     {
         return view('projects.show', compact('project'));
     }
+
+    public function update(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        $project->update($validated);
+
+        return redirect()->route('projects.index')->with('success', 'Projeto atualizado com sucesso!');
+    }
+
+    public function destroy(Project $project)
+    {
+        $project->delete();
+
+        return redirect()->route('projects.index')->with('success', 'Projeto arquivado com sucesso!');
+    }
+
+    public function forceDestroy($id)
+    {
+        $project = Project::withTrashed()->findOrFail($id);
+        $project->forceDelete();
+
+        return redirect()->route('projects.index')->with('success', 'Projeto excluído permanentemente!');
+    }
 }
