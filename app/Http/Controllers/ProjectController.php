@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Project;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ProjectController extends Controller
 {
     public function index()
     {
-        $projects = Project::latest()->get();
+        $projects = Auth::user()->projects()->get();
         return view('projects.index', compact('projects'));
     }
 
@@ -25,7 +26,7 @@ class ProjectController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        Project::create($validated);
+        Auth::user()->projects()->create($validated);
 
         return redirect()->route('projects.index')->with('success', 'Projeto criado com sucesso!');
     }

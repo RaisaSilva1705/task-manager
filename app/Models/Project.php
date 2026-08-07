@@ -12,12 +12,18 @@ class Project extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'user_id',
         'name',
-        'description',
+        'description'
     ];
 
     public function tasks(): HasMany // 1:N
     {
         return $this->hasMany(Task::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }
