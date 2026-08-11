@@ -24,9 +24,59 @@ class ProjectController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'template' => 'nullable|string',
         ]);
 
-        Auth::user()->projects()->create($validated);
+        $project = Auth::user()->projects()->create([
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? null,
+        ]);
+
+        $template = $request->input('template', 'empty');
+        $columns = [];
+
+        if ($template === 'simple') {
+            $columns = [
+                'A Fazer',
+                'Em Andamento',
+                'Concluído',
+            ];
+        }
+        elseif ($template === 'development') {
+            $columns = [
+                'Backlog',
+                'A Fazer',
+                'Em Desenvovimento',
+                'Code Review',
+                'Homologação',
+                'Produção',
+            ];
+        }
+        elseif ($template === 'okr') {
+            $columns = [
+                'Objetivos',
+                'Resultados Chave',
+                'Iniciativas',
+                'Avaliando',
+                'Concluído',
+            ];
+        }
+        elseif ($template === 'education') {
+            $columns = [
+                'Aulas para Assistir',
+                'Leituras',
+                'Resumos',
+                'Exercícios',
+                'Revisão',
+            ];
+        }
+
+        foreach ($columns as $index => $columnName) {
+            $project->columns()->create([
+                'name' => $columnName,
+                'order' => $index,
+            ]);
+        }
 
         return redirect()->route('projects.index')->with('success', 'Projeto criado com sucesso!');
     }

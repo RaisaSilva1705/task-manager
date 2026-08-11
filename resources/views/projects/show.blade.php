@@ -15,31 +15,28 @@
         @endif
     </div>
 
-    <div class="row">
-        <div class="col-md-4 mb-4">
-            <div class="card bg-body-secondary border-0 h-100">
-                <div class="card-header border-bottom-0 pt-3 pb-0">
-                    <h5 class="fw-bold"><i class="bi bi-circle text-secondary me-2"></i> A Fazer</h5>
+    <div class="d-flex overflow-x-auto align-items-start pb-4" style="gap: 1.5rem; min-height: 65vh;">
+        @foreach ($project->columns as $column)
+            <div class="card bg-body-secondary border-0 flex-shrink-0" style="width: 320px;">
+                <div class="card-header border-bottom-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold m-0">{{ $column->name }}</h5>
+                    <button class="btn btn-link text-secondary p-0 text-decoration-none"><i class="bi bi-three-dots"></i></button>
                 </div>
-                <div class="card-body task-column" id="column-todo" data-status="todo">
-                    @foreach ($project->tasks->where('status', 'todo') as $task)
+
+                <div class="card-body task-column" id="column-{{ $column->id }}" data-column-id="{{ $column->id }}">
+                    @foreach ($column->tasks as $task)
                         <div class="card shadow-sm mb-2 border-0 task-card cursor-grab" data-id="{{ $task->id }}">
                             <div class="card-body p-3">
                                 <div class="d-flex justify-content-between align-items-start mb-1">
                                     <h6 class="card-title fw-bold mb-1">{{ $task->title }}</h6>
                                     <div class="d-flex">
-                                        <button type="button" class="btn btn-link text-secondary p-0 ms-2" title="Editar Tarefa" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#editTaskModal" 
-                                            data-id="{{ $task->id }}"
-                                            data-title="{{ $task->title }}"
-                                            data-description="{{ $task->description }}">
+                                        <button type="button" class="btn btn-link text-secondary p-0 ms-2" data-bs-toggle="modal" data-bs-target="#editTaskModal" data-id="{{ $task->id }}" data-title="{{ $task->title }}" data-description="{{ $task->description }}">
                                             <i class="bi bi-pencil me-1"></i>
                                         </button>
-                                        <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir esta tarefa?')">
+                                        <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" onsubmit="return confirm('Deseja excluir esta tarefa?')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-link text-danger p-0 ms-2" title="Excluir Tarefa">
+                                            <button type="submit" class="btn btn-link text-danger p-0 ms-2">
                                                 <i class="bi bi-trash3 me-1"></i>
                                             </button>
                                         </form>
@@ -52,89 +49,28 @@
                         </div>
                     @endforeach
                     <div class="d-grid mt-2">
-                        <button class="btn btn-sm btn-outline-secondary text-start border-dashed" data-bs-toggle="modal" data-bs-target="#newTaskModal">
+                        <button class="btn btn-sm btn-outline-secondary text-start border-dashed btn-add-task" data-bs-toggle="modal" data-bs-target="#newTaskModal" data-column-id="{{ $column->id }}">
                             <i class="bi bi-plus me-1"></i> Nova Tarefa
                         </button>
                     </div>
                 </div>
             </div>
+        @endforeach
+
+        <div class="card bg-transparent border-dashed flex-shrink-0 d-flex justify-content-center align-items-center" id="ghost-column-btn" style="width: 320px; min-height: 120px; cursor: pointer; border-color: #adb5bd !important;">
+            <h5 class="text-muted m-0 fw-bold"><i class="bi bi-plus-lg me-2"></i> Nova Coluna</h5>
         </div>
 
-        <div class="col-md-4 mb-4">
-            <div class="card bg-body-secondary border-0 h-100">
-                <div class="card-header border-bottom-0 pt-3 pb-0">
-                    <h5 class="fw-bold"><i class="bi bi-play-circle text-primary-custom me-2"></i> Em Progresso</h5>
-                </div>
-                <div class="card-body task-column" id="column-in-progress" data-status="in_progress">
-                    @foreach ($project->tasks->where('status', 'in_progress') as $task)
-                        <div class="card shadow-sm mb-2 border-0 task-card cursor-grab" data-id="{{ $task->id }}">
-                            <div class="card-body p-3">
-                                <div class="d-flex justify-content-between align-items-start mb-1">
-                                    <h6 class="card-title fw-bold mb-1">{{ $task->title }}</h6>
-                                    <div class="d-flex">
-                                        <button type="button" class="btn btn-link text-secondary p-0 ms-2" title="Editar Tarefa" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#editTaskModal" 
-                                            data-id="{{ $task->id }}"
-                                            data-title="{{ $task->title }}"
-                                            data-description="{{ $task->description }}">
-                                            <i class="bi bi-pencil me-1"></i>
-                                        </button>
-                                        <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir esta tarefa?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-link text-danger p-0 ms-2" title="Excluir Tarefa">
-                                                <i class="bi bi-trash3 me-1"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                                @if ($task->description)
-                                    <p class="card-text small text-muted mb-0">{{ Str::limit($task->description, 60) }}</p>
-                                @endif
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4 mb-4">
-            <div class="card bg-body-secondary border-0 h-100">
-                <div class="card-header border-bottom-0 pt-3 pb-0">
-                    <h5 class="fw-bold"><i class="bi bi-check2-circle text-success me-2"></i> Concluído</h5>
-                </div>
-                <div class="card-body task-column" id="column-done" data-status="done">
-                    @foreach ($project->tasks->where('status', 'done') as $task)
-                        <div class="card shadow-sm mb-2 border-0 task-card cursor-grab" data-id="{{ $task->id }}">
-                            <div class="card-body p-3">
-                                <div class="d-flex justify-content-between align-items-start mb-1">
-                                    <h6 class="card-title fw-bold mb-1">{{ $task->title }}</h6>
-                                    <div class="d-flex">
-                                        <button type="button" class="btn btn-link text-secondary p-0 ms-2" title="Editar Tarefa" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#editTaskModal" 
-                                            data-id="{{ $task->id }}"
-                                            data-title="{{ $task->title }}"
-                                            data-description="{{ $task->description }}">
-                                            <i class="bi bi-pencil me-1"></i>
-                                        </button>
-                                        <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir esta tarefa?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-link text-danger p-0 ms-2" title="Excluir Tarefa">
-                                                <i class="bi bi-trash3 me-1"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                                @if ($task->description)
-                                    <p class="card-text small text-muted mb-0">{{ Str::limit($task->description, 60) }}</p>
-                                @endif
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
+        <div class="card bg-body-tertiary border-0 shadow-sm flex-shrink-0 d-none" id="ghost-column-form" style="width: 320px;">
+            <div class="card-body p-3">
+                <form id="new-column-form" action="{{ route('columns.store', $project->id) }}" method="POST">
+                    @csrf
+                    <input type="text" class="form-control border-primary-custom mb-2 shadown-sm" id="new-column-input" name="name" placeholder="Nome da Coluna..." required>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button type="button" class="btn btm-sm btn-secondary text-muted border-0" id="cancel-column-btn">Cancelar</button>
+                        <button type="submit" class="btn btn-sm btn-primary-custom fw-bold px-3">Adicionar</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -149,6 +85,7 @@
                 </div>
                 <form action="{{ route('tasks.store', $project->id) }}" method="POST">
                     @csrf
+                    <input type="hidden" name="column_id" id="task_column_id">
                     <div class="modal-body">
                         <div class="mb-3">
                             <label for="title" class="form-label fw-bold">O que precisa ser feito?</label>
@@ -198,6 +135,18 @@
         </div>
     </div>
 
+    {{-- Toast --}}
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
+        <div class="toast align-items-center text-bg-success border-0" id="kanbanToast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body fw-bold" id="toastMessage">
+                    Ação realizada com sucesso!
+                </div>
+                <button type="button" class="btn-close white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
     <style>
         .border-dashed {
             border-style: dashed !important;
@@ -210,65 +159,165 @@
             background-color: #f8f9fa;
             border: 2px dashed #0d6efd !important;
         }
+        .overflow-x-auto::-webkit-scrollbar { height: 8px; }
+        .overflow-x-auto::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+        }
+        .overflow-x-auto::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 4px;
+        }
+        .overflow-x-auto::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.3) }
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const columns = document.querySelectorAll('.task-column');
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            
+            // Função Global de Toast
+            function showToast(message, type = 'success') {
+                const toastEl = document.getElementById('kanbanToast');
+                const toastBody = document.getElementById('toastMessage');
+                
+                toastBody.textContent = message;
+                
+                if(type === 'error')
+                    toastEl.classList.replace('text-bg-success', 'text-bg-danger');
+                else
+                    toastEl.classList.replace('text-bg-danger', 'text-bg-success');
 
-            columns.forEach(column => {
-                new Sortable(column, {
+                const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+                toast.show();
+            }
+
+            // Lógica dos Modais de Tarefa
+            const newTaskModal = document.getElementById('newTaskModal');
+            if (newTaskModal) {
+                newTaskModal.addEventListener('show.bs.modal', event => {
+                    const button = event.relatedTarget;
+                    document.getElementById('task_column_id').value = button.getAttribute('data-column-id');
+                });
+            }
+
+            const editTaskModal = document.getElementById('editTaskModal');
+            if (editTaskModal) {
+                editTaskModal.addEventListener('show.bs.modal', event => {
+                    const button = event.relatedTarget;
+                    document.getElementById('edit_title').value = button.getAttribute('data-title');
+                    document.getElementById('edit_description').value = button.getAttribute('data-description') || '';
+                    document.getElementById('editTaskForm').action = `/tarefas/${button.getAttribute('data-id')}`;
+                });
+            }
+
+            function initSortable(columnElement) {
+                new Sortable(columnElement, {
                     group: 'kanban',
                     animation: 150,
                     ghostClass: 'sortable-ghost',
                     onEnd: function (evt) {
-                        const itemEl = evt.item;
-                        const taskId = itemEl.getAttribute('data-id');
-                        const newStatus = evt.to.getAttribute('data-status');
+                        const taskId = evt.item.getAttribute('data-id');
+                        const newColumnId = evt.to.getAttribute('data-column-id');
 
-                        if (evt.from === evt.to) return;
+                        const taskIds = Array.from(evt.to.querySelectorAll('.task-card'))
+                                             .map(card => card.getAttribute('data-id'));
 
-                        fetch(`/tarefas/${taskId}/status`, {
+                        fetch(`/tarefas/${taskId}/move`, {
                             method: 'PATCH',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': csrfToken
                             },
-                            body: JSON.stringify({ status: newStatus })
+                            body: JSON.stringify({ 
+                                column_id: newColumnId,
+                                task_ids: taskIds
+                            })
                         })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                console.log(`Tarefa atualizada com sucesso para o status: ${newStatus}`);
-                            } else {
-                                console.error('Erro ao atualizar o status da tarefa:', data.message);
+                                showToast(data.message);
                             }
                         })
                         .catch(error => {
-                            console.error('Erro ao atualizar o status da tarefa:', error);
-                            alert('Ocorreu um erro ao atualizar o status da tarefa. Por favor, tente novamente.');
+                            showToast('Erro ao mover a tarefa.', 'error');
                         });
                     }
                 });
-            });
+            }
+
+            document.querySelectorAll('.task-column').forEach(column => initSortable(column));
+
+            const ghostBtn = document.getElementById('ghost-column-btn');
+            const ghostForm = document.getElementById('ghost-column-form');
+            const ghostInput = document.getElementById('new-column-input');
+            const newColumnForm = document.getElementById('new-column-form');
+
+            if (ghostBtn && ghostForm) {
+                ghostBtn.addEventListener('click', () => {
+                    ghostBtn.classList.add('d-none');
+                    ghostBtn.classList.remove('d-flex');
+                    ghostForm.classList.remove('d-none');
+                    ghostInput.focus();
+                });
+
+                document.getElementById('cancel-column-btn').addEventListener('click', () => {
+                    ghostForm.classList.add('d-none');
+                    ghostBtn.classList.remove('d-none');
+                    ghostBtn.classList.add('d-flex');
+                    ghostInput.value = '';
+                });
+
+                newColumnForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    fetch(this.action, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ name: ghostInput.value })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            ghostForm.classList.add('d-none');
+                            ghostBtn.classList.remove('d-none', 'd-flex');
+                            ghostBtn.classList.add('d-flex');
+                            ghostInput.value = '';
+                            
+                            showToast(data.message);
+
+                            const newColumnHtml = `
+                                <div class="card bg-body-secondary border-0 flex-shrink-0" style="width: 320px;">
+                                    <div class="card-header border-bottom-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
+                                        <h5 class="fw-bold m-0">${data.column.name}</h5>
+                                        <button class="btn btn-link text-secondary p-0 text-decoration-none"><i class="bi bi-three-dots"></i></button>
+                                    </div>
+                                    <div class="card-body task-column" id="column-${data.column.id}" data-column-id="${data.column.id}">
+                                        <div class="d-grid mt-2">
+                                            <button class="btn btn-sm btn-outline-secondary text-start border-dashed btn-add-task" data-bs-toggle="modal" data-bs-target="#newTaskModal" data-column-id="${data.column.id}">
+                                                <i class="bi bi-plus me-1"></i> Nova Tarefa
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            
+                            ghostBtn.insertAdjacentHTML('beforebegin', newColumnHtml);
+                            
+                            const newColumnBody = document.getElementById(`column-${data.column.id}`);
+                            initSortable(newColumnBody);
+                        }
+                    })
+                    .catch(error => {
+                        showToast('Erro ao criar a coluna.', 'error');
+                    });
+                });
+            }
         });
-
-        const editTaskModal = document.getElementById('editTaskModal');
-        if (editTaskModal) {
-            editTaskModal.addEventListener('show.bs.modal', event => {
-                const button = event.relatedTarget;
-                const taskId = button.getAttribute('data-id');
-                const title = button.getAttribute('data-title');
-                const description = button.getAttribute('data-description');
-
-                document.getElementById('edit_title').value = title;
-                document.getElementById('edit_description').value = description || '';
-
-                const form = document.getElementById('editTaskForm');
-                form.action = `/tarefas/${taskId}`;
-            });
-        }
     </script>
 @endsection

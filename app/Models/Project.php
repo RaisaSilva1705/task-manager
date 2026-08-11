@@ -22,6 +22,11 @@ class Project extends Model
         return $this->hasMany(Task::class);
     }
 
+    public function columns(): HasMany // 1:N
+    {
+        return $this->hasMany(Column::class)->orderBy('order');
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

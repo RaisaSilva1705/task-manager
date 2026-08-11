@@ -8,27 +8,43 @@ use App\Models\Task;
 
 class TaskController extends Controller
 {
-    public function store(Request $request, Project $project)
+    public function store(Request $request, $projectId)
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'description' => 'nullable|string'
+            'description' => 'nullable|string',
+            'column_id' => 'required|exists:columns,id'
         ]);
 
-        $project->tasks()->create($validated);
+        $project = Project::findOrFail($projectId);
 
-        return redirect()->route('projects.show', $project->id);
+        $project->tasks()->create([
+            'title' => $validated['title'],
+            'description' => $validated['description'],
+            'column_id' => $validated['column_id'],
+            'order' => 0
+        ]);
+
+        return back()->with('success', 'Tarefa criada com sucesso!');
     }
 
-    public function updateStatus(Request $request, Task $task)
+    public function move(Request $request, $taskId)
     {
-        $validated = $request->validate([
-            'status' => 'required|in:todo,in_progress,done'
+        $request->validate([
+            'column_id' => 'required|exists:columns,id',
+            'task_ids' => 'nullable|array'
         ]);
 
-        $task->update(['status' => $validated['status']]);
+        $task = Task::findOrFail($taskId);
+        $task->update(['column_id' => $request->column_id]);
 
-        return response()->json(['success' => true, 'message' => 'Status atualizado!']);
+        if ($request->has('task_ids')){
+            foreach ($request->task_ids as $index => $id){
+                Task::where('id', $id)->update(['order' => $index]);
+            }
+        }
+
+        return response()->json(['success' => true, 'message' => 'Posição atualizada com sucesso!']);
     }
 
     public function destroy(Task $task)

@@ -12,10 +12,16 @@ class Task extends Model
 
     protected $fillable = [
         'project_id',
+        'column_id',
         'title',
         'description',
-        'status',
+        'order',
     ];
+
+    public function column(): BelongsTo // 1:1
+    {
+        return $this->belongsTo(Column::class);
+    }
 
     public function project(): BelongsTo // 1:1
     {

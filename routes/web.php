@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ColumnController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskController;
@@ -16,9 +17,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/projetos/{project}', [ProjectController::class, 'destroy'])->name('projects.destroy');
     Route::delete('/projetos/{project}/force', [ProjectController::class, 'forceDestroy'])->name('projects.forceDestroy');
 
+    // Colunas
+    Route::post('/projetos/{projects}/colunas', [ColumnController::class, 'store'])->name('columns.store');
+
     // Tarefas
     Route::post('/projetos/{project}/tarefas', [TaskController::class, 'store'])->name('tasks.store');
-    Route::put('/tarefas/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.updateStatus');
+    Route::patch('/tarefas/{task}/move', [TaskController::class, 'move'])->name('tasks.move');
     Route::put('/tarefas/{task}', [TaskController::class, 'update'])->name('tasks.update');
     Route::delete('/tarefas/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
 
