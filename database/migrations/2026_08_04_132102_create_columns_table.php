@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('name');
             $table->integer('order')->default(0);
             $table->integer('wip_limit')->nullable();
+            $table->string('color')->default('default');
             $table->timestamps();
         });
     }

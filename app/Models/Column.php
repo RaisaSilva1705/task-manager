@@ -10,6 +10,7 @@ class Column extends Model
         'project_id',
         'name',
         'order',
+        'color',
         'wip_limit',
     ];
 

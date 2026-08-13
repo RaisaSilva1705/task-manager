@@ -19,6 +19,9 @@ Route::middleware('auth')->group(function () {
 
     // Colunas
     Route::post('/projetos/{projects}/colunas', [ColumnController::class, 'store'])->name('columns.store');
+    Route::patch('/projetos/{projects}/colunas/reorder', [ColumnController::class, 'reorder'])->name('columns.reorder');
+    Route::put('/colunas/{column}', [ColumnController::class, 'update'])->name('columns.update');
+    Route::delete('/colunas/{column}', [ColumnController::class, 'destroy'])->name('columns.destroy');
 
     // Tarefas
     Route::post('/projetos/{project}/tarefas', [TaskController::class, 'store'])->name('tasks.store');

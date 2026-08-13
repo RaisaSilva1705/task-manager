@@ -15,12 +15,27 @@
         @endif
     </div>
 
-    <div class="d-flex overflow-x-auto align-items-start pb-4" style="gap: 1.5rem; min-height: 65vh;">
+    <div class="d-flex overflow-x-auto align-items-start pb-4" id="kanban-board" style="gap: 1.5rem; min-height: 65vh;">
         @foreach ($project->columns as $column)
             <div class="card bg-body-secondary border-0 flex-shrink-0" style="width: 320px;">
                 <div class="card-header border-bottom-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
                     <h5 class="fw-bold m-0">{{ $column->name }}</h5>
-                    <button class="btn btn-link text-secondary p-0 text-decoration-none"><i class="bi bi-three-dots"></i></button>
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-link text-secondary p-0 text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-three-dots"></i>
+                        </button>
+                        <ul class="dropdown-menu shadow-sm border-0">
+                            <li>
+                                <h6 class="dropdown-header text-uppercase" style="font-size: 0.75rem;">Ações da Coluna</h6>
+                            </li>
+                            <li><button type="button" class="dropdown-item small"><i class="bi bi-pencil me-2 text-muted"></i> Renomear Coluna</button></li>
+                            <li><button type="button" class="dropdown-item small"><i class="bi bi-arrows-move me-2 text-muted"></i> Mover Coluna</button></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><button type="button" class="dropdown-item small"><i class="bi bi-palette me-2 text-muted"></i> Alterar Cor</button></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><button type="button" class="dropdown-item small text-danger btn-delete-column" data-column-id="{{ $column->id }}"><i class="bi bi-trash3 me-2"></i> Excluir</button></li>
+                        </ul>
+                    </div>
                 </div>
 
                 <div class="card-body task-column" id="column-{{ $column->id }}" data-column-id="{{ $column->id }}">
@@ -135,6 +150,26 @@
         </div>
     </div>
 
+    {{-- Modal para excluir coluna --}}
+    <div class="modal fade" id="deleteColumnModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold text-danger"><i class="bi bi-exclamation-triangle me-2"></i> Excluir Coluna</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-0">
+                    <p>Tem certeza que deseja excluir esta coluna?</p>
+                    <p class="text-danger small fw-bold mb-0">Atenção: Todas as tarefas dentro desta coluna serão excluídas permanentemente. Se não quiser perder essas terefas, arraste-as para outra coluna antes de excluir.</p>
+                </div>
+                <div class="modal-footer border-top-0 bg-light">
+                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger fw-bold" id="confirmDeleteColumnBtn">Excluir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Toast --}}
     <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
         <div class="toast align-items-center text-bg-success border-0" id="kanbanToast" role="alert" aria-live="assertive" aria-atomic="true">
@@ -216,6 +251,9 @@
                     group: 'kanban',
                     animation: 150,
                     ghostClass: 'sortable-ghost',
+                    scroll: true,
+                    scrollSensitivity: 80,
+                    scrollSpeed: 20,
                     onEnd: function (evt) {
                         const taskId = evt.item.getAttribute('data-id');
                         const newColumnId = evt.to.getAttribute('data-column-id');
@@ -248,6 +286,36 @@
             }
 
             document.querySelectorAll('.task-column').forEach(column => initSortable(column));
+
+            const kanbanBoard = document.getElementById('kanban-board');
+            if (kanbanBoard){
+                new Sortable(kanbanBoard, {
+                    animation: 150,
+                    handle: '.card-header',
+                    filter: '#ghost-column-btn, #ghost-column-form',
+                    ghostClass: 'sortable-ghost',
+                    onEnd: function (evt) {
+                        const columnIds = Array.from(kanbanBoard.querySelectorAll('.task-column'))
+                                            .map(col => col.getAttribute('data-column-id'));
+                        
+                        fetch(`/projetos/{{ $project->id }}/colunas/reorder`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken
+                            },
+                            body: JSON.stringify({ column_ids: columnIds })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // showToast(data.message);
+                            }
+                        })
+                        .catch(error => showToast('Erro ao reordenar as colunas.', 'error'));
+                    }
+                });
+            }
 
             const ghostBtn = document.getElementById('ghost-column-btn');
             const ghostForm = document.getElementById('ghost-column-form');
@@ -317,6 +385,55 @@
                         showToast('Erro ao criar a coluna.', 'error');
                     });
                 });
+            }
+
+            let columnIdToDelete = null;
+            let deleteColumnModalInstance = null;
+            const deleteColumnModalEl = document.getElementById('deleteColumnModal');
+
+            if (deleteColumnModalEl)
+                deleteColumnModalInstance = new bootstrap.Modal(deleteColumnModalEl);
+
+            document.querySelectorAll('.btn-delete-column').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    columnIdToDelete = this.getAttribute('data-column-id');
+                    if (deleteColumnModalInstance)
+                        deleteColumnModalInstance.show();
+                });
+            });
+
+            const confirmDeleteBtn = document.getElementById('confirmDeleteColumnBtn');
+            if (confirmDeleteBtn) {
+                confirmDeleteBtn.addEventListener('click', function() {
+                    if (!columnIdToDelete) return;
+
+                    fetch(`/colunas/${columnIdToDelete}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success){
+                            showToast(data.message);
+
+                            const columnEl = document.getElementById(`column-${columnIdToDelete}`).closest('.flex-shrink-0');
+                            columnEl.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+                            columnEl.style.opacity = '0';
+                            columnEl.style.tranform = "scale(0.9)";
+
+                            setTimeout(() => {
+                                columnEl.remove();
+                            }, 300);
+
+                            if (deleteColumnModalInstance)
+                                deleteColumnModalInstance.hide();
+                        }
+                    })
+                    .catch(error => showToast('Erro ao excluir a coluna.', 'error'));
+                })
             }
         });
     </script>
